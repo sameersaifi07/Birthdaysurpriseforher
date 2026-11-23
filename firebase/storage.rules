@@ -1,0 +1,41 @@
+rules_version = '2';
+// Published automatically by `firebase deploy` (or paste into Storage → Rules → Publish).
+// The developer email below must match adminEmails in config.js.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isGoogle() { return request.auth != null && request.auth.token.firebase.sign_in_provider == 'google.com'; }
+    function isAdmin() {
+      return isGoogle() && request.auth.token.email_verified == true
+        && request.auth.token.email in ['samsaifi2526@gmail.com'];
+    }
+    function isActive() {
+      return isGoogle()
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.active == true;
+    }
+    function okFile() {
+      return request.resource == null
+        || (request.resource.size < 150 * 1024 * 1024
+            && request.resource.contentType.matches('(image|video|audio)/.*'));
+    }
+
+    // Customers' original photos, videos, songs and voice notes (for editing). Owner + developer only.
+    match /users/{uid}/{siteId}/{file} {
+      allow read: if isAdmin() || (isGoogle() && request.auth.uid == uid);
+      allow write: if okFile() && (isAdmin() || (isActive() && request.auth.uid == uid));
+    }
+
+    // The full website template (your product). Only activated customers and you can read it; only you can change it.
+    match /app/{file} {
+      allow read: if isAdmin() || isActive();
+      allow write: if isAdmin() && (request.resource == null || request.resource.size < 5 * 1024 * 1024);
+    }
+
+    // The published, encrypted website. Anyone with the link can download it, but it only opens with the PIN.
+    match /bundles/{siteId}/{file} {
+      allow read: if true;
+      allow write: if (request.resource == null || request.resource.size < 400 * 1024 * 1024)
+        && (isAdmin() || (isActive()
+            && firestore.get(/databases/(default)/documents/sites/$(siteId)).data.owner == request.auth.uid));
+    }
+  }
+}

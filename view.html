@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Surprise 💌</title>
+<meta name="theme-color" content="#160c20">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="A Surprise 💌">
+<meta property="og:description" content="Something special is waiting for you ♡">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&family=Caveat:wght@500&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style id="lk-style">
+  :root{color-scheme:dark;--night:#160c20;--accent:#e8557a;--gold:#f2c46d;--gold-soft:#f8e1ac;--text:#f6ecf2;--soft:#cbb6c6;--line:rgba(255,255,255,.12);--glass:rgba(255,255,255,.06)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"DM Sans",system-ui,sans-serif;color:var(--text);background:var(--night);
+    background-image:radial-gradient(900px 600px at 85% -5%,rgba(232,85,122,.28),transparent 60%),radial-gradient(800px 600px at -10% 40%,#3a2160,transparent 60%)}
+  [hidden]{display:none!important}
+  #lk{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;
+    padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+  .eb{font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-soft)}
+  #lk h1{font-family:"Fraunces",Georgia,serif;font-weight:300;font-size:clamp(2rem,8vw,3.2rem);line-height:1.1}
+  #lk h1 em{color:var(--accent)}
+  #lk p{color:var(--soft);max-width:32ch}
+  .lockic{font-size:2.6rem;filter:drop-shadow(0 0 18px rgba(242,196,109,.45))}
+  .cd{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .cd div{min-width:72px;padding:14px 10px;border-radius:16px;background:var(--glass);border:1px solid var(--line)}
+  .cd b{display:block;font-family:"Fraunces",serif;font-size:2rem;color:var(--gold);font-variant-numeric:tabular-nums}
+  .cd span{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
+  #lk form{display:flex;flex-direction:column;align-items:center;gap:12px}
+  #lk #pi{width:min(240px,80vw);padding:14px 18px;border-radius:999px;border:2px solid transparent;text-align:center;font:700 1.4rem "DM Sans",sans-serif;
+    letter-spacing:.5em;color:#2b1b24;background:#fbf3e8;outline:none;-webkit-text-security:disc}
+  #lk #pi:focus{border-color:var(--gold)}
+  button.go{padding:13px 30px;border-radius:999px;border:0;font:700 1rem "DM Sans",sans-serif;color:#fff;background:var(--accent);cursor:pointer}
+  button.go:disabled{opacity:.5}
+  .err{color:#ff8fa8;min-height:1.3em;font-size:.92rem}
+  .hand{font-family:"Caveat",cursive;font-size:1.5rem;color:var(--gold-soft)}
+  .bar{width:min(240px,70vw);height:4px;border-radius:4px;background:var(--line);overflow:hidden;margin:12px auto 0}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--accent));transition:width .2s}
+  .shake{animation:sh .4s}
+  @keyframes sh{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+</style>
+</head>
+<body>
+<div id="lk">
+  <span class="lockic" aria-hidden="true">🔒</span>
+  <span class="eb">a surprise is waiting</span>
+  <div id="load"><p class="hand">Getting your surprise ready…</p></div>
+  <div id="none" hidden><h1>Not here <em>yet</em> ♡</h1><p style="margin:12px auto 0">This surprise link isn't ready. Check the link, or ask the person who sent it.</p></div>
+  <div id="wait" hidden>
+    <h1>Not yet, <em>love</em> ♡</h1>
+    <p style="margin:12px auto 16px">Your surprise unlocks in…</p>
+    <div class="cd"><div><b id="d">0</b><span>days</span></div><div><b id="h">00</b><span>hours</span></div><div><b id="m">00</b><span>mins</span></div><div><b id="s">00</b><span>secs</span></div></div>
+  </div>
+  <form id="pin" hidden autocomplete="off">
+    <h1>For your eyes <em>only</em> ♡</h1>
+    <p>Enter the secret PIN that was sent to you 💌</p>
+    <input id="pi" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="Secret PIN">
+    <div class="err" id="er" role="alert"></div>
+    <button class="go" id="go" type="submit">Unlock</button>
+  </form>
+  <div id="busy" hidden><p class="hand">Unwrapping your surprise… 🎁</p><div class="bar"><i id="bi"></i></div></div>
+</div>
+<script src="config.js"></script>
+<script>
+(() => {
+  const BS = window.BS || {}, FB = BS.firebase || {};
+  const $ = id => document.getElementById(id), pad = n => String(n).padStart(2, "0");
+  const qs = new URLSearchParams(location.search);
+  const ID = (qs.get("s") || location.hash.slice(1) || "").replace(/[^A-Za-z0-9_-]/g, "");
+  const FS = "https://firestore.googleapis.com/v1/projects/" + FB.projectId + "/databases/(default)/documents/";
+
+  /* ---------- bug reports (sent to the developer panel, max 5 per visit) ---------- */
+  let sent = 0;
+  function report(kind, msg, src){
+    if (sent >= 5 || !FB.apiKey || !FB.projectId) return; sent++;
+    const s = v => ({ stringValue: String(v || "").slice(0, 500) });
+    const body = { fields: { site: { stringValue: (ID || "none").slice(0, 60) }, kind: s(kind), msg: s(msg), src: s(src), ua: { stringValue: navigator.userAgent.slice(0, 280) }, at: { timestampValue: new Date().toISOString() } } };
+    try { fetch(FS + "errors?key=" + FB.apiKey, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), keepalive: true }).catch(() => {}); } catch {}
+  }
+  addEventListener("error", e => { if (e.message) report("js", e.message, (e.filename || "").split("/").pop() + ":" + (e.lineno || 0)); }, true);
+  addEventListener("unhandledrejection", e => report("promise", e.reason && (e.reason.message || e.reason), ""));
+  addEventListener("error", e => { const t = e.target; if (t && t !== window && (t.tagName === "IMG" || t.tagName === "VIDEO" || t.tagName === "AUDIO")) {
+    const src = t.currentSrc || t.src || "", M = window.__MEDIA__ || {};
+    const path = Object.keys(M).find(k => M[k] === src) || src.split("?")[0].split("/").pop();
+    report("media", "Couldn't load " + t.tagName.toLowerCase() + ": " + path, "");
+  } }, true);
+
+  const showOnly = id => ["load", "none", "wait", "pin", "busy"].forEach(x => $(x).hidden = x !== id);
+  if (!ID || !FB.apiKey){ showOnly("none"); return; }
+  const sub = window.crypto && crypto.subtle;
+  if (!sub){ $("none").querySelector("p").textContent = "Please open this link in Chrome or Safari."; showOnly("none"); return; }
+
+  /* ---------- 1. read the public record ---------- */
+  let META = null, bundleP = null;
+  fetch(FS + "public/" + ID + "?key=" + FB.apiKey, { cache: "no-store" }).then(async r => {
+    if (r.status === 404 || r.status === 403){ showOnly("none"); return; }
+    if (!r.ok){ report("load", "public record " + r.status, ""); throw new Error("meta"); }
+    const f = (await r.json()).fields || {};
+    const str = k => (f[k] && (f[k].stringValue || f[k].integerValue)) || "";
+    META = { unlock: str("unlock"), pinLen: Number(str("pinLen")) || 0, auto: str("auto"), v: str("v") };
+    bundleP = loadBundle(); bundleP.catch(() => {});
+    start();
+  }).catch(() => { $("load").innerHTML = '<p class="hand">No internet connection ♡</p><p style="margin-top:8px">Check your connection and open the link again.</p>'; });
+
+  /* ---------- 2. download the encrypted bundle in the background (useless without the PIN) ---------- */
+  async function loadBundle(){
+    const url = "https://firebasestorage.googleapis.com/v0/b/" + FB.storageBucket + "/o/" + encodeURIComponent("bundles/" + ID + "/bundle.enc") + "?alt=media&v=" + encodeURIComponent(META.v);
+    const r = await fetch(url);
+    if (!r.ok){ report("load", "bundle " + r.status, ""); throw new Error("bundle " + r.status); }
+    const total = Number(r.headers.get("content-length")) || 0;
+    if (!r.body || !total){ const u = new Uint8Array(await r.arrayBuffer()); $("bi").style.width = "100%"; return u; }
+    const out = new Uint8Array(total), rd = r.body.getReader(); let got = 0;
+    for (;;){ const { done, value } = await rd.read(); if (done) break; out.set(value, got); got += value.length; $("bi").style.width = Math.round(100 * got / total) + "%"; }
+    return got === total ? out : out.slice(0, got);
+  }
+
+  /* ---------- 3. countdown, then PIN ---------- */
+  function start(){
+    const UNLOCK = META.unlock ? new Date(META.unlock) : new Date(0);
+    if (UNLOCK > new Date()){
+      showOnly("wait");
+      const t = setInterval(tick, 1000); tick();
+      function tick(){
+        if (!$("d")){ clearInterval(t); return; }
+        const ms = UNLOCK - new Date();
+        if (ms <= 0){ clearInterval(t); showPin(); return; }
+        $("d").textContent = Math.floor(ms / 864e5); $("h").textContent = pad(Math.floor(ms / 36e5) % 24);
+        $("m").textContent = pad(Math.floor(ms / 6e4) % 60); $("s").textContent = pad(Math.floor(ms / 1e3) % 60);
+      }
+    } else showPin();
+  }
+  function showPin(){
+    if (META.auto){ showOnly("busy"); open(META.auto).then(ok => { if (!ok){ report("decrypt", "auto key rejected", ""); showOnly("none"); } }).catch(failed); return; }
+    showOnly("pin"); setTimeout(() => { const f = $("pi"); if (f) f.focus(); }, 200);
+  }
+  function failed(e){
+    showOnly("pin");
+    $("er").textContent = "Couldn't load the surprise. Check your internet and try again.";
+    report("load", (e && e.message) || "open failed", "");
+  }
+
+  /* ---------- 4. unlock and show ---------- */
+  async function open(pin){
+    const u8 = await bundleP;
+    if (String.fromCharCode(...u8.slice(0, 4)) !== "BDY1"){ report("load", "bundle format", ""); throw new Error("bundle"); }
+    let o = 4; const salt = u8.slice(o, o += 16), ivV = u8.slice(o, o += 12), vl = u8[o++], vct = u8.slice(o, o += vl), ivM = u8.slice(o, o += 12);
+    const base = await sub.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+    const key = await sub.deriveKey({ name: "PBKDF2", salt, iterations: 150000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    try { await sub.decrypt({ name: "AES-GCM", iv: ivV }, key, vct); } catch { return false; }
+    const plain = new Uint8Array(await sub.decrypt({ name: "AES-GCM", iv: ivM }, key, u8.subarray(o)));
+    const ml = plain[0] | plain[1] << 8 | plain[2] << 16 | plain[3] << 24;
+    const man = JSON.parse(new TextDecoder().decode(plain.subarray(4, 4 + ml))), base0 = 4 + ml;
+    const media = {};
+    for (const f of man.files) media[f.path] = URL.createObjectURL(new Blob([plain.subarray(base0 + f.offset, base0 + f.offset + f.length)], { type: f.type }));
+    window.__MEDIA__ = media;
+    mount(new TextDecoder().decode(plain.subarray(base0 + man.app.offset, base0 + man.app.offset + man.app.length)));
+    return true;
+  }
+  function mount(html){
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    document.title = doc.title || document.title;
+    $("lk").remove(); const ls = $("lk-style"); if (ls) ls.remove();
+    const run = (node, parent) => {
+      if (node.tagName === "SCRIPT"){
+        const s = document.createElement("script");
+        for (const a of node.attributes) s.setAttribute(a.name, a.value);
+        s.textContent = node.textContent; parent.appendChild(s);
+      } else parent.appendChild(document.importNode(node, true));
+    };
+    [...doc.head.children].forEach(n => { if (n.tagName === "META" || n.tagName === "TITLE") return; run(n, document.head); });
+    for (const a of doc.body.attributes) document.body.setAttribute(a.name, a.value);
+    [...doc.body.childNodes].forEach(n => run(n, document.body));
+  }
+  $("pin").addEventListener("submit", async e => {
+    e.preventDefault();
+    const pin = $("pi").value.trim(); if (!pin) return;
+    $("go").disabled = true; $("er").textContent = ""; $("busy").hidden = false;
+    try {
+      const ok = await open(pin);
+      if (!ok){ $("busy").hidden = true; $("er").textContent = "Hmm, that's not it. Try again ♡"; $("pi").value = ""; $("pi").classList.remove("shake"); void $("pi").offsetWidth; $("pi").classList.add("shake"); }
+    } catch (err){ $("busy").hidden = true; $("er").textContent = "Couldn't load the surprise. Check your internet and try again."; report("load", (err && err.message) || "unlock failed", ""); }
+    finally { const g = $("go"); if (g) g.disabled = false; }
+  });
+  $("pi").addEventListener("input", () => { $("pi").value = $("pi").value.replace(/\D/g, ""); if (META && META.pinLen && $("pi").value.length === META.pinLen) $("pin").requestSubmit(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Developer Panel · Birthday Surprise</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#140b1c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:dark;--bg:#140b1c;--panel:#1d1128;--card:#26173a;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.18);
+    --text:#f4eaf2;--soft:#b9a6b8;--accent:#e8557a;--gold:#f2c46d;--ok:#58c88c;--err:#ff8fa8;--serif:"Fraunces",Georgia,serif;--sans:"DM Sans",system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100vh}
+  [hidden]{display:none!important}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  a{color:var(--gold)}
+  .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:12px max(16px,env(safe-area-inset-left,0px));background:rgba(20,11,28,.96);border-bottom:1px solid var(--line)}
+  .brand{font-family:var(--serif);font-size:1.1rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{display:block;font-family:var(--sans);font-size:.72rem;color:var(--soft)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.06);font-weight:700;font-size:.86rem;white-space:nowrap;text-decoration:none;color:var(--text)}
+  .btn:hover{background:rgba(255,255,255,.1)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.ok{background:var(--ok);border-color:var(--ok);color:#06210f}
+  .btn.small{padding:5px 11px;font-size:.8rem}
+  .btn.danger{color:var(--err)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border-radius:999px;border:0;background:#fff;color:#1f1f1f;font-weight:700}
+  input[type=text],input[type=email],input[type=password],input[type=number],input[type=search]{width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--line2);background:#120a19;outline:none}
+  input:focus{border-color:var(--gold)}
+  .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  .dialog{width:min(440px,100%);background:var(--panel);border:1px solid var(--line2);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:12px}
+  .dialog h2{font-family:var(--serif);font-weight:400;font-size:1.5rem}
+  .dialog p{color:var(--soft);font-size:.92rem}
+  .err{color:var(--err);font-size:.88rem;min-height:1.2em}
+  .wrap{max-width:1000px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left,0px)) 60px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tabs button{border:1px solid var(--line2);background:transparent;padding:8px 14px;border-radius:999px;font-weight:700;color:var(--soft)}
+  .tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tabs .count{opacity:.8;font-weight:500}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .bar input{flex:1;min-width:180px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .stat b{display:block;font-family:var(--serif);font-size:1.6rem;font-weight:400}
+  .stat span{font-size:.78rem;color:var(--soft)}
+  .rows{display:flex;flex-direction:column;gap:10px}
+  .row{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .row h3{font-size:1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .row .sub{font-size:.84rem;color:var(--soft);word-break:break-word}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.74rem;color:var(--soft);font-weight:500}
+  .pill.ok{color:var(--ok)} .pill.warn{color:var(--gold)} .pill.bad{color:var(--err)}
+  .quota{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--soft)}
+  .quota input{width:70px;padding:5px 8px}
+  .report{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:3px;font-size:.86rem}
+  .report .ok{color:var(--ok)} .report .warn{color:var(--gold)} .report .bad{color:var(--err)}
+  .mono{font-family:ui-monospace,Consolas,monospace;font-size:.8rem}
+  .empty{border:1px dashed var(--line2);border-radius:14px;padding:22px;text-align:center;color:var(--soft)}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:90;background:#2b1b3a;border:1px solid var(--line2);padding:10px 16px;border-radius:999px;font-size:.9rem}
+  #testbed{position:fixed;left:-10000px;top:0;width:375px;height:720px;border:0;visibility:hidden}
+</style>
+</head>
+<body>
+
+<div class="center" id="boot"><p style="color:var(--soft)" id="boot-msg">Loading the developer panel…</p></div>
+
+<div class="center" id="s-login" hidden>
+  <div class="dialog">
+    <h2>🛠 Developer login</h2>
+    <p>Sign in with your developer Google account.</p>
+    <button class="gbtn" id="google" type="button">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
+    <div class="err" id="l-msg" role="status"></div>
+  </div>
+</div>
+
+<div class="center" id="s-denied" hidden>
+  <div class="dialog">
+    <h2>Developers only</h2>
+    <p>You're signed in as <b id="d-email"></b>, which isn't a developer account. Customers use the <a href="studio.html">studio</a>.</p>
+    <button class="btn" data-logout type="button">↩ Log out</button>
+  </div>
+</div>
+
+<div id="s-main" hidden>
+  <header class="top">
+    <div class="brand">🛠 Developer Panel<small id="who"></small></div>
+    <a class="btn small" href="studio.html">Studio</a>
+    <button class="btn small" data-logout type="button">↩ Log out</button>
+  </header>
+  <main class="wrap">
+    <div class="stats" id="stats"></div>
+    <div class="tabs" role="tablist">
+      <button type="button" data-tab="users" class="on">👥 Customers <span class="count" id="c-users"></span></button>
+      <button type="button" data-tab="sites">🌐 Websites <span class="count" id="c-sites"></span></button>
+      <button type="button" data-tab="bugs">🐞 Bugs <span class="count" id="c-bugs"></span></button>
+      <button type="button" data-tab="tpl">🧩 Template <span class="count" id="c-tpl"></span></button>
+    </div>
+
+    <section id="t-users">
+      <div class="bar"><input type="search" id="q-users" placeholder="Search name or email"><button class="btn small" data-reload type="button">↻ Refresh</button></div>
+      <div class="rows" id="orders" style="margin-bottom:14px"></div>
+      <div class="rows" id="users"></div>
+    </section>
+
+    <section id="t-sites" hidden>
+      <div class="bar"><input type="search" id="q-sites" placeholder="Search name, owner email or id"><button class="btn small primary" id="check-all" type="button">🩺 Check all live websites</button><button class="btn small" data-reload type="button">↻ Refresh</button></div>
+      <div class="rows" id="sites"></div>
+    </section>
+
+    <section id="t-tpl" hidden>
+      <div class="row">
+        <h3>The full website design (private)</h3>
+        <div class="sub">Customers' studios load it from here after you activate them. It is never on the public website. Upload <b>birthday-builder-dev/src/app-template.html</b> once, and again whenever you change the design.</div>
+        <div class="sub" id="tpl-status">Checking…</div>
+        <div class="acts"><label class="btn small primary" style="position:relative;overflow:hidden">⬆ Upload template<input type="file" id="tpl-file" accept=".html,text/html" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label></div>
+        <div class="err" id="tpl-msg" role="status"></div>
+      </div>
+    </section>
+
+    <section id="t-bugs" hidden>
+      <div class="bar"><span style="flex:1;color:var(--soft);font-size:.88rem">Errors that happened on partners' phones while opening a website (newest first).</span><button class="btn small danger" id="clear-bugs" type="button">Clear all</button><button class="btn small" data-reload type="button">↻ Refresh</button></div>
+      <div class="rows" id="bugs"></div>
+    </section>
+  </main>
+</div>
+
+<iframe id="testbed" title="Test" aria-hidden="true" tabindex="-1"></iframe>
+<div class="toast" id="toast" hidden></div>
+
+<script src="config.js"></script>
+<script>
+(() => {
+  const BS = window.BS || {}, FB = BS.firebase || {};
+  const $ = s => document.querySelector(s);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const show = id => ["#boot", "#s-login", "#s-denied", "#s-main"].forEach(s => $(s).hidden = s !== id);
+  const toast = t => { const x = $("#toast"); x.textContent = t; x.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => x.hidden = true, 2400); };
+  const viewLink = id => new URL("view.html?s=" + id, location.href).href;
+  const tsMs = t => t && t.toMillis ? t.toMillis() : 0;
+  const when = t => { const ms = typeof t === "number" ? t : tsMs(t); return ms ? new Date(ms).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "—"; };
+  const mb = b => (b / 1048576).toFixed(1) + " MB";
+
+  if (!FB.apiKey){ $("#boot-msg").textContent = "Add your Firebase settings to config.js first (see README)."; return; }
+  let auth, db, st, me;
+  const admins = (BS.adminEmails || []).map(e => e.toLowerCase());
+  BS.loadFirebase(["auth", "firestore", "storage"]).then(() => {
+    auth = firebase.auth(); db = firebase.firestore(); st = firebase.storage();
+    auth.onAuthStateChanged(u => {
+      me = u;
+      if (!u) return show("#s-login");
+      if (!admins.includes(String(u.email || "").toLowerCase())){ $("#d-email").textContent = u.email || ""; return show("#s-denied"); }
+      $("#who").textContent = u.email; show("#s-main"); loadAll();
+    });
+  }).catch(() => $("#boot-msg").textContent = "Couldn't load. Check your internet and refresh.");
+  $("#google").addEventListener("click", async () => { try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch (e){ $("#l-msg").textContent = BS.authError(e); } });
+  document.querySelectorAll("[data-logout]").forEach(b => b.addEventListener("click", () => auth.signOut()));
+  document.querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-tab]").forEach(x => x.classList.toggle("on", x === b));
+    ["users", "sites", "bugs", "tpl"].forEach(t => $("#t-" + t).hidden = t !== b.dataset.tab);
+  }));
+  document.querySelectorAll("[data-reload]").forEach(b => b.addEventListener("click", loadAll));
+
+  let USERS = [], SITES = [], BUGS = [], ORDERS = [], PURCH = {};
+  async function loadAll(){
+    try {
+      const [u, s, b] = await Promise.all([
+        db.collection("users").get(),
+        db.collection("sites").get(),
+        db.collection("errors").orderBy("at", "desc").limit(300).get()
+      ]);
+      USERS = u.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
+      SITES = s.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => tsMs(b.updatedAt) - tsMs(a.updatedAt));
+      BUGS = b.docs.map(d => Object.assign({ id: d.id }, d.data()));
+    } catch (e){ toast("Couldn't load data: " + (e.code || e.message) + ". Are the security rules published?"); return; }
+    try {
+      const [o, p] = await Promise.all([db.collection("orders").orderBy("at", "desc").limit(50).get(), db.collection("purchases").get()]);
+      ORDERS = o.docs.map(d => Object.assign({ id: d.id }, d.data())); PURCH = {}; p.docs.forEach(d => PURCH[d.id] = d.data());
+    } catch { ORDERS = []; PURCH = {}; }
+    renderStats(); renderOrders(); renderUsers(); renderSites(); renderBugs(); tplStatus();
+  }
+
+  /* ---------- template ---------- */
+  async function tplStatus(){
+    const box = $("#tpl-status");
+    try {
+      const m = await st.ref("app/template.html").getMetadata();
+      box.innerHTML = ""; box.append(el("span", "pill ok", "uploaded"), " " + Math.round(m.size / 1024) + " KB · updated " + when(Date.parse(m.updated)));
+      $("#c-tpl").textContent = "";
+    } catch (e){
+      box.innerHTML = ""; box.append(el("span", "pill bad", "missing"), " Customers can't build until you upload it.");
+      $("#c-tpl").textContent = "⚠️";
+    }
+  }
+  $("#tpl-file").addEventListener("change", async e => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    const msg = $("#tpl-msg"); msg.className = "err"; msg.textContent = "";
+    const t = await f.text();
+    const ok = t.includes("const CONFIG = {") && t.includes("\n};\n<" + "/script>") && (t.match(/class="chapter"/g) || []).length >= 10;
+    if (!ok){ msg.textContent = "That isn't the full template. Pick birthday-builder-dev/src/app-template.html (not the demo)."; return; }
+    msg.textContent = "Uploading…";
+    try {
+      await st.ref("app/template.html").put(new Blob([t], { type: "text/html" }), { contentType: "text/html", cacheControl: "no-cache" });
+      msg.className = "sub"; msg.textContent = "✅ Template uploaded. New and edited websites use it from now on (re-publish older ones to update them).";
+      tplStatus();
+    } catch (err){ msg.textContent = "Upload failed: " + (err.code || err.message); }
+  });
+  function renderStats(){
+    const box = $("#stats"); box.innerHTML = "";
+    const live = SITES.filter(s => s.publishedAt).length, waiting = USERS.filter(u => !u.active && !admins.includes(String(u.email).toLowerCase())).length;
+    const day = Date.now() - 864e5, bugs24 = BUGS.filter(b => tsMs(b.at) > day).length;
+    const customers = USERS.filter(u => !admins.includes(String(u.email).toLowerCase())).length;
+    [[customers, "customers"], [waiting, "waiting for activation"], [live, "live websites"], [bugs24, "bug reports (24 h)"]].forEach(([n, t]) => {
+      const s = el("div", "stat"); s.append(el("b", null, String(n)), el("span", null, t)); box.appendChild(s);
+    });
+    $("#c-users").textContent = "(" + customers + ")"; $("#c-sites").textContent = "(" + SITES.length + ")"; $("#c-bugs").textContent = "(" + BUGS.length + ")";
+  }
+
+  /* ---------- Shopify orders ---------- */
+  function renderOrders(){
+    const box = $("#orders"); box.innerHTML = "";
+    if (!ORDERS.length) return;
+    const r = el("div", "row"); r.appendChild(el("h3", null, "🛒 Shopify orders (latest " + ORDERS.length + ")"));
+    ORDERS.forEach(o => {
+      const p = PURCH[o.email] || {}, waiting = o.credits > 0 && Number(p.unclaimed || 0) > 0;
+      const line = el("div", "sub");
+      line.append((o.orderName || o.orderId) + " · " + (o.email || "no email") + " · " + (o.credits || 0) + " website" + (o.credits === 1 ? "" : "s") + " · " + (o.currency || "") + " " + (o.total || "") + " · " + when(o.at) + "  ");
+      line.appendChild(el("span", "pill " + (!o.credits ? "" : waiting ? "warn" : "ok"), !o.credits ? "no studio item" : waiting ? "paid · waiting for them to log in" : "unlocked ✓"));
+      if (waiting){
+        const mv = el("button", "btn small", "↪ Move to another Gmail"); mv.type = "button"; mv.style.marginLeft = "6px";
+        mv.addEventListener("click", () => movePurchase(o.email));
+        line.appendChild(mv);
+      }
+      r.appendChild(line);
+    });
+    box.appendChild(r);
+  }
+
+  async function movePurchase(from){
+    const to = String(prompt("Move the unused purchase of " + from + " to which Gmail?", "") || "").trim().toLowerCase();
+    if (!to) return;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)){ toast("That doesn't look like an email."); return; }
+    try {
+      await db.runTransaction(async t => {
+        const a = db.collection("purchases").doc(from), b = db.collection("purchases").doc(to);
+        const A = await t.get(a), B = await t.get(b);
+        const n = A.exists ? Number(A.data().unclaimed || 0) : 0; if (n <= 0) throw new Error("nothing left to move");
+        t.update(a, { unclaimed: 0, movedTo: to });
+        t.set(b, { email: to, unclaimed: (B.exists ? Number(B.data().unclaimed || 0) : 0) + n, total: (B.exists ? Number(B.data().total || 0) : 0) + n,
+                   orders: (B.exists && B.data().orders || []).concat(A.data().orders || []), movedFrom: from }, { merge: true });
+      });
+      toast("Moved to " + to + ". It unlocks when they log in with that Gmail."); loadAll();
+    } catch (e){ toast("Couldn't move: " + (e.code || e.message)); }
+  }
+
+  /* ---------- customers ---------- */
+  function renderUsers(){
+    const q = $("#q-users").value.trim().toLowerCase(), box = $("#users"); box.innerHTML = "";
+    const list = USERS.filter(u => !q || (u.email + " " + u.name).toLowerCase().includes(q));
+    if (!list.length) box.appendChild(el("div", "empty", q ? "No match." : "No customers yet. They appear here after they register."));
+    list.forEach(u => {
+      const r = el("div", "row"), h = el("h3", null, u.name || u.email || "(no email)");
+      const isDev = admins.includes(String(u.email).toLowerCase());
+      h.append(el("span", "pill " + (isDev ? "ok" : u.active ? "ok" : "warn"), isDev ? "developer" : u.active ? "active" : "waiting"));
+      if (u.paidVia === "shopify") h.append(el("span", "pill ok", "💳 paid on Shopify"));
+      const n = SITES.filter(s => s.owner === u.id).length;
+      r.append(h, el("div", "sub", (u.email || "") + " · joined " + when(u.createdAt) + " · " + n + " website" + (n === 1 ? "" : "s")));
+      const acts = el("div", "acts");
+      const qbox = el("label", "quota", "Websites allowed"); const qi = el("input"); qi.type = "number"; qi.min = 0; qi.max = 50; qi.value = u.quota || 0; qbox.appendChild(qi);
+      const save = el("button", "btn small", "Save"); save.type = "button";
+      save.addEventListener("click", () => setUser(u, { quota: Math.max(0, Math.min(50, Number(qi.value) || 0)) }));
+      const tog = el("button", "btn small " + (u.active ? "danger" : "ok"), u.active ? "Deactivate" : "✅ Activate"); tog.type = "button";
+      tog.addEventListener("click", () => setUser(u, u.active ? { active: false } : { active: true, quota: Math.max(1, Number(u.quota) || 0) }));
+      if (!isDev) acts.append(tog, qbox, save);
+      if (u.email){ const m = el("a", "btn small", "✉️ Email"); m.href = "mailto:" + u.email; acts.appendChild(m); }
+      r.appendChild(acts); box.appendChild(r);
+    });
+  }
+  async function setUser(u, patch){
+    try { await db.collection("users").doc(u.id).update(patch); Object.assign(u, patch); toast(patch.active === true ? "Activated ♡" : patch.active === false ? "Deactivated" : "Saved"); renderUsers(); renderStats(); }
+    catch (e){ toast("Not saved: " + (e.code || e.message)); }
+  }
+  $("#q-users").addEventListener("input", renderUsers);
+
+  /* ---------- websites ---------- */
+  function status(s){
+    if (!s.publishedAt) return ["not published", "warn"];
+    if (tsMs(s.updatedAt) > tsMs(s.publishedAt) + 2000) return ["live · unpublished edits", "warn"];
+    return ["live", "ok"];
+  }
+  function renderSites(){
+    const q = $("#q-sites").value.trim().toLowerCase(), box = $("#sites"); box.innerHTML = "";
+    const list = SITES.filter(s => !q || (s.title + " " + s.ownerEmail + " " + s.id).toLowerCase().includes(q));
+    if (!list.length) box.appendChild(el("div", "empty", q ? "No match." : "No websites yet."));
+    list.forEach(s => {
+      const r = el("div", "row"), [t, c] = status(s), h = el("h3", null, s.title ? "For " + s.title : "Untitled");
+      h.append(el("span", "pill " + c, t));
+      const bugs = BUGS.filter(b => b.site === s.id).length; if (bugs) h.append(el("span", "pill bad", "🐞 " + bugs));
+      r.append(h, el("div", "sub", (s.ownerEmail || "?") + " · edited " + when(s.updatedAt) + (s.publishedAt ? " · published " + when(s.publishedAt) : "")));
+      const info = el("div", "sub mono", "PIN: " + (s.nopin ? "none" : (s.pin || "—")) + "   Unlock: " + (s.unlock ? when(new Date(s.unlock).getTime()) : "right away") + (s.publishedSize ? "   Size: " + mb(s.publishedSize) : "") + "   id: " + s.id);
+      r.appendChild(info);
+      const acts = el("div", "acts");
+      const ed = el("a", "btn small primary", "✏️ Edit"); ed.href = "studio.html?site=" + s.id; acts.appendChild(ed);
+      if (s.publishedAt){
+        const o = el("a", "btn small", "Open ↗"); o.href = viewLink(s.id); o.target = "_blank"; o.rel = "noopener";
+        const cp = el("button", "btn small", "🔗 Copy link"); cp.type = "button";
+        cp.addEventListener("click", async () => { try { await navigator.clipboard.writeText(viewLink(s.id)); toast("Link copied"); } catch { prompt("Link:", viewLink(s.id)); } });
+        const ck = el("button", "btn small", "🩺 Check"); ck.type = "button";
+        const out = el("div", "report"); out.hidden = true;
+        ck.addEventListener("click", async () => { ck.disabled = true; await check(s, out); ck.disabled = false; });
+        acts.append(o, cp, ck); r.append(acts, out);
+        s._check = () => check(s, out);
+      } else r.appendChild(acts);
+      box.appendChild(r);
+    });
+  }
+  $("#q-sites").addEventListener("input", renderSites);
+  $("#check-all").addEventListener("click", async () => {
+    const b = $("#check-all"); b.disabled = true;
+    const live = SITES.filter(s => s._check);
+    for (let i = 0; i < live.length; i++){ b.textContent = "🩺 Checking " + (i + 1) + "/" + live.length + "…"; await live[i]._check(); }
+    b.textContent = "🩺 Check all live websites"; b.disabled = false; toast("All checks finished");
+  });
+
+  /* ---------- health check: everything the partner's phone does, step by step ---------- */
+  async function check(s, out){
+    out.hidden = false; out.innerHTML = "";
+    let problems = 0;
+    const line = (cls, t) => { if (cls === "bad") problems++; out.appendChild(el("div", cls, (cls === "ok" ? "✅ " : cls === "warn" ? "⚠️ " : cls === "bad" ? "❌ " : "… ") + t)); };
+    const wait = line("", "Checking…"), waitEl = out.lastChild;
+    try {
+      const pub = await db.collection("public").doc(s.id).get();
+      if (!pub.exists){ line("bad", "The public record is missing: the link shows “Not here yet”. Open Edit → Publish."); return; }
+      const P = pub.data();
+      line("ok", "Link record found" + (P.unlock ? " · unlocks " + when(new Date(P.unlock).getTime()) + (new Date(P.unlock) > new Date() ? " (countdown showing now)" : "") : " · opens right away"));
+      if (tsMs(s.updatedAt) > tsMs(s.publishedAt) + 2000) line("warn", "There are edits that are not published yet. The partner sees the older version until someone taps Publish.");
+      const url = "https://firebasestorage.googleapis.com/v0/b/" + FB.storageBucket + "/o/" + encodeURIComponent("bundles/" + s.id + "/bundle.enc") + "?alt=media&v=" + Date.now();
+      const t0 = performance.now(); let r;
+      try { r = await fetch(url); } catch { line("bad", "The website file can't be downloaded from this browser. Usually the Storage CORS setting is missing (README step 6)."); return; }
+      if (!r.ok){ line("bad", "Website file download failed (" + r.status + "). Re-publish it."); return; }
+      const u8 = new Uint8Array(await r.arrayBuffer()), secs = (performance.now() - t0) / 1000;
+      line(u8.length > 60 * 1048576 ? "warn" : "ok", "Website file downloads: " + mb(u8.length) + " in " + secs.toFixed(1) + " s" + (u8.length > 60 * 1048576 ? ". That's big for mobile data: suggest shorter videos." : ""));
+      const key = s.nopin || P.pinLen === 0 ? P.auto : s.pin;
+      if (!key){ line("bad", "No PIN is saved for this website, so it can't be tested. Re-publish it."); return; }
+      if (!s.nopin && String(s.pin).length !== Number(P.pinLen)) line("bad", "PIN length mismatch: the PIN box auto-submits at " + P.pinLen + " digits but the PIN has " + String(s.pin).length + ".");
+      const res = await decrypt(u8, key);
+      if (!res){ line("bad", "The saved PIN does NOT open the published website. Re-publish it with the right PIN."); return; }
+      line("ok", "PIN " + (s.nopin ? "(no password)" : s.pin) + " opens it");
+      const { html, files, blobs } = res;
+      let C = null;
+      try { const a = html.indexOf("const CONFIG = {"), b = html.indexOf("\n};\n<" + "/script>", a) + 3; C = new Function(html.slice(a, b) + "\nreturn CONFIG;")(); } catch {}
+      if (!C) line("bad", "The website's settings couldn't be read (template problem).");
+      else {
+        const need = []; if (C.music) need.push(["the song", C.music]);
+        (C.albums || []).forEach((al, i) => (al.items || []).forEach((it, k) => need.push(["memory box " + (i + 1) + " item " + (k + 1), it.src])));
+        const have = new Set(files.map(f => f.path)), missing = need.filter(n => n[1] && !have.has(n[1]));
+        missing.forEach(m => line("bad", "Missing file: " + m[0] + " (" + m[1] + "). It shows as blank."));
+        if (!missing.length) line("ok", "All " + need.length + " photos, videos and the song are inside");
+        if (!C.music) line("warn", "No song added.");
+        if (!have.has(C.voiceNote || "media/voice-note.mp3")) line("warn", "No voice note (optional).");
+        const empty = files.filter(f => !f.length); if (empty.length) line("bad", empty.length + " file(s) are empty (0 bytes).");
+        const heavy = files.filter(f => f.length > 40 * 1048576); heavy.forEach(f => line("warn", f.path + " is " + mb(f.length) + ": may load slowly on phones."));
+      }
+      // run the website for 5 seconds in a hidden phone-sized frame and catch any errors
+      const errs = await runTest(html, blobs);
+      if (errs.length) errs.slice(0, 5).forEach(e => line("bad", "Error while running: " + e));
+      else line("ok", "Opens and runs without errors (5-second test)");
+      const bugs = BUGS.filter(b => b.site === s.id);
+      if (bugs.length) line("warn", bugs.length + " bug report(s) from real phones: see the Bugs tab.");
+    } catch (e){ line("bad", "Check stopped: " + (e.code || e.message)); }
+    finally {
+      waitEl.remove();
+      out.insertBefore(el("div", problems ? "bad" : "ok", problems ? "Result: " + problems + " problem(s) found" : "Result: everything works ♡"), out.firstChild);
+    }
+  }
+  async function decrypt(u8, pin){
+    const sub = crypto.subtle;
+    if (String.fromCharCode(...u8.slice(0, 4)) !== "BDY1") return null;
+    let o = 4; const salt = u8.slice(o, o += 16), ivV = u8.slice(o, o += 12), vl = u8[o++], vct = u8.slice(o, o += vl), ivM = u8.slice(o, o += 12);
+    const base = await sub.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+    const key = await sub.deriveKey({ name: "PBKDF2", salt, iterations: 150000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    try { await sub.decrypt({ name: "AES-GCM", iv: ivV }, key, vct); } catch { return null; }
+    const plain = new Uint8Array(await sub.decrypt({ name: "AES-GCM", iv: ivM }, key, u8.subarray(o)));
+    const ml = plain[0] | plain[1] << 8 | plain[2] << 16 | plain[3] << 24;
+    const man = JSON.parse(new TextDecoder().decode(plain.subarray(4, 4 + ml))), b0 = 4 + ml;
+    const blobs = {};
+    for (const f of man.files) blobs[f.path] = URL.createObjectURL(new Blob([plain.subarray(b0 + f.offset, b0 + f.offset + f.length)], { type: f.type }));
+    return { html: new TextDecoder().decode(plain.subarray(b0 + man.app.offset, b0 + man.app.offset + man.app.length)), files: man.files, blobs };
+  }
+  function runTest(html, blobs){
+    return new Promise(res => {
+      const f = $("#testbed");
+      const names = {}; Object.keys(blobs).forEach(p => names[blobs[p]] = p);
+      const probe = "<script>window.__ERR=[];var __N=" + JSON.stringify(names) + ";addEventListener('error',function(e){var s=e.target&&(e.target.currentSrc||e.target.src);__ERR.push((e.message||('this file is broken or in a format phones can\\'t play: '+(__N[s]||s||'?')))+(e.lineno?' (line '+e.lineno+')':''))},true);addEventListener('unhandledrejection',function(e){__ERR.push(String(e.reason&&(e.reason.message||e.reason)))});window.__MEDIA__=" + JSON.stringify(blobs) + ";</scr" + "ipt>";
+      f.srcdoc = html.replace("<head>", "<head>\n" + probe);
+      setTimeout(() => {
+        let errs = [];
+        try { errs = (f.contentWindow.__ERR || []).filter(e => !/play\(\)|NotAllowedError|user didn't interact|AbortError/i.test(e)); } catch (e){ errs = ["test frame couldn't be read"]; }
+        f.srcdoc = ""; Object.values(blobs).forEach(u => URL.revokeObjectURL(u));
+        res(errs);
+      }, 5000);
+    });
+  }
+
+  /* ---------- bugs ---------- */
+  function renderBugs(){
+    const box = $("#bugs"); box.innerHTML = "";
+    if (!BUGS.length){ box.appendChild(el("div", "empty", "No bug reports. ♡")); return; }
+    // group same message on the same site
+    const groups = new Map();
+    BUGS.forEach(b => { const k = b.site + "|" + b.kind + "|" + b.msg; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(b); });
+    groups.forEach(list => {
+      const b = list[0], s = SITES.find(x => x.id === b.site);
+      const r = el("div", "row"), h = el("h3", null, (s && s.title ? "For " + s.title : b.site));
+      h.append(el("span", "pill bad", b.kind || "error")); if (list.length > 1) h.append(el("span", "pill", "×" + list.length));
+      r.append(h, el("div", "sub mono", b.msg + (b.src ? "  @ " + b.src : "")), el("div", "sub", "Last: " + when(b.at) + " · " + device(b.ua)));
+      const acts = el("div", "acts");
+      if (s){ const ed = el("a", "btn small", "✏️ Edit website"); ed.href = "studio.html?site=" + s.id; acts.appendChild(ed); }
+      const del = el("button", "btn small danger", "Delete"); del.type = "button";
+      del.addEventListener("click", async () => { try { await Promise.all(list.map(x => db.collection("errors").doc(x.id).delete())); BUGS = BUGS.filter(x => !list.includes(x)); renderBugs(); renderStats(); renderSites(); } catch (e){ toast("Couldn't delete: " + (e.code || e.message)); } });
+      acts.appendChild(del); r.appendChild(acts); box.appendChild(r);
+    });
+  }
+  const device = ua => { ua = String(ua || ""); return /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Mac/.test(ua) ? "Mac" : "device"; } ;
+  $("#clear-bugs").addEventListener("click", async () => {
+    const b = $("#clear-bugs");
+    if (b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "Tap again to delete all"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "Clear all"; }, 3500); return; }
+    b.dataset.sure = ""; b.textContent = "Clear all";
+    try { await Promise.all(BUGS.map(x => db.collection("errors").doc(x.id).delete())); BUGS = []; renderBugs(); renderStats(); renderSites(); }
+    catch (e){ toast("Couldn't delete: " + (e.code || e.message)); }
+  });
+})();
+</script>
+</body>
+</html>
